@@ -1,41 +1,104 @@
-function obtenerusuario(req, res) {
-    db.query("SELECT * FROM usuarios", (err, result) => {
-        if (err) return res.status(500).send("Error");
+const db = require('../models/connection');
+
+
+async function getUser(req, res) {
+    try {
+        const result = await db.query("SELECT * FROM usuarios");
         res.json(result.rows);
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error al obtener usuarios");
+    }
 }
 
 
-function obtenerusuario(req, res) {
-    db.query("SELECT * FROM usuarios WHERE id=$1", [req.params.id], (err, result) => {
-        if (err) return res.status(500).send("Error");
+async function getUserById(req, res) {
+    try {
+        const result = await db.query(
+            "SELECT * FROM usuarios WHERE id=$1",
+            [req.params.id]
+        );
+        if (result.rows.length === 0)
+            return res.status(404).send("Usuario no encontrado");
         res.json(result.rows[0]);
-    });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+}
+
+
+async function postUser(req, res) {
+    try {
+        const { usuario, password } = req.body;
+        await db.query(
+            "INSERT INTO usuarios (usuario, password) VALUES ($1, $2)",
+            [usuario, password]
+        );
+        res.send("Usuario insertado");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+}
+
+
+async function putUser(req, res) {
+    try {
+        const { usuario, password } = req.body;
+        const result = await db.query(
+            "UPDATE usuarios SET usuario=$1, password=$2 WHERE id=$3",
+            [usuario, password, req.params.id]
+        );
+        if (result.rowCount === 0)
+            return res.status(404).send("Usuario no encontrado");
+        res.send("Usuario actualizado");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+}
+
+
+async function patchUser(req, res) {
+    try {
+        const { usuario } = req.body;
+        const result = await db.query(
+            "UPDATE usuarios SET usuario=$1 WHERE id=$2",
+            [usuario, req.params.id]
+        );
+        if (result.rowCount === 0)
+            return res.status(404).send("Usuario no encontrado");
+        res.send("Usuario actualizado");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+}
+
+
+async function deleteUser(req, res) {
+    try {
+        const result = await db.query(
+            "DELETE FROM usuarios WHERE id=$1",
+            [req.params.id]
+        );
+        if (result.rowCount === 0)
+            return res.status(404).send("Usuario no encontrado");
+        res.send("Usuario eliminado");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+
+}
+
+
+module.exports = {
+    getUser,
+    getUserById,
+    postUser,
+    putUser,
+    patchUser,
+    deleteUser
 };
-
-
-/*function inserrusuario(req, res) {
-    db.query("INSERT INTO usuarios(usuario,password) VALUES($1,$2)", [usuario, password]);
-    res.send("Datos insertados");
-} catch (err) {
-    res.status(500).send("Error al insertar datos");
-};*/
-
-
-function actualizarusuario(req, res) {
-    const { usuario, password } = req.body;
-    const query = "UPDATE usuarios SET usuario=$1,password=$2 WHERE id=$3";
-    db.query(query, [usuario, password, req.params.id], (err, result) => {
-        if (err) return res.status(500).send("Error");
-        res.json({ mensaje: "Recurso actualizado", id: req.params.id });
-    });
-}
-
-
-
-function eliminarsuario(req, res) {
-    db.query("DELETE FROM usuarios WHERE id=$1", [req.params.id], (err, result) => {
-        if (err) return res.status(500).send("Error");
-        res.send("Fila eliminada por id");
-    });
-}
