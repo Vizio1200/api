@@ -26,7 +26,7 @@
             const [armas, setArmas] = useState([]);
 
             useEffect(() => {
-                fetch('/api/subfusiles')
+                fetch('https://api-il9f.onrender.com/api/subfusiles')
                     .then(res => {
                         if (!res.ok) throw new Error('Error en la red');
                         return res.json();
