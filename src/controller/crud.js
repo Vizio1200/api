@@ -93,6 +93,18 @@ async function deleteUser(req, res) {
 
 }
 
+// ... (tus otras funciones getUser, postUser, etc)
+
+const getSubfusiles = async (req, res) => {
+    try {
+        // Pedimos las nuevas columnas: dano, cadencia, alcance, movilidad
+        const result = await pool.query('SELECT id, nombre, descripcion, imagen, dano, cadencia, alcance, movilidad FROM subfusiles');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("ERROR REAL EN LA TERMINAL:", err.message);
+        res.status(500).send("Error en la base de datos");
+    }
+};
 
 module.exports = {
     getUser,
@@ -100,5 +112,6 @@ module.exports = {
     postUser,
     putUser,
     patchUser,
-    deleteUser
+    deleteUser,
+    getSubfusiles // <--- ¡Asegúrate de que esta línea esté aquí!
 };

@@ -1,14 +1,35 @@
-const express = require('express');
-const router = express.Router();
+const db = require('../models/connection');
 
-const controller = require('../controller/crud');
+// ... (tus otras funciones getUser, postUser, etc. se mantienen igual)
 
-router.get('/usuarios', controller.getUser);
-router.get('/usuarios/:id', controller.getUserById);
-router.post('/usuarios', controller.postUser);
-router.put('/usuarios/:id', controller.putUser);
-router.patch('/usuarios/:id', controller.patchUser);
-router.delete('/usuarios/:id', controller.deleteUser);
+async function deleteUser(req, res) {
+    try {
+        const result = await db.query("DELETE FROM usuarios WHERE id=$1", [req.params.id]);
+        if (result.rowCount === 0) return res.status(404).send("Usuario no encontrado");
+        res.send("Usuario eliminado");
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Error");
+    }
+}
 
+const getSubfusiles = async (req, res) => {
+    try {
+        // Solo pedimos las columnas que SI existen en tu pgAdmin
+        const result = await pool.query('SELECT id, nombre, descripcion, imagen FROM subfusiles');
+        res.json(result.rows);
+    } catch (err) {
+        console.error("ERROR REAL EN LA TERMINAL:", err.message);
+        res.status(500).send("Error en la base de datos");
+    }
+};
 
-module.exports = router;
+module.exports = {
+    getUser,
+    getUserById,
+    postUser,
+    putUser,
+    patchUser,
+    deleteUser,
+    getSubfusiles // Exportado correctamente
+};
