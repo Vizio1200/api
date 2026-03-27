@@ -3,10 +3,14 @@ const { Pool } = require('pg');
 // Esta es tu URL externa de Render
 const connectionString = "postgresql://warzone_db_user:ay0uyRcRNvZuMPo5NcR5fRrzfvjVYxRx@dpg-d73a9fndiees73b2192g-a.ohio-postgres.render.com/warzone_db";
 
+const { Pool } = require('pg');
 const pool = new Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false } // Esto es lo que evita el error de SSL
+    connectionString: process.env.DATABASE_URL,
+    ssl: {
+        rejectUnauthorized: false // <--- ESTO ES VITAL EN RENDER
+    }
 });
+module.exports = pool;
 
 // Función "Mágica" que crea todo sola
 const setupDB = async () => {
