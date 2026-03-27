@@ -8,34 +8,23 @@ app.use(express.json());
 
 // --- ESTA FUNCIÓN CREARÁ LA TABLA Y LAS ARMAS POR TI ---
 const inicializarDB = async () => {
+    // --- ESTA ES LA FORMA CORRECTA PARA ACTUALIZAR ---
     try {
-        // Crear tabla
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS subfusiles (
-                id SERIAL PRIMARY KEY,
-                nombre VARCHAR(100) NOT NULL,
-                imagen TEXT,
-                dano INTEGER DEFAULT 0,
-                cadencia INTEGER DEFAULT 0,
-                movilidad INTEGER DEFAULT 0,
-                alcance INTEGER DEFAULT 0
-            );
-        `);
+        // 1. Borramos todo siempre para actualizar los links
+        await pool.query('DELETE FROM subfusiles');
 
-        // Insertar datos solo si está vacía
-        const res = await pool.query('SELECT COUNT(*) FROM subfusiles');
-        if (res.rows[0].count == 0) {
-            await pool.query(`
-                INSERT INTO subfusiles (nombre, imagen, dano, cadencia, movilidad, alcance) VALUES
-                ('HMR-9', 'https://www.gamesatlas.com/images/jocu/mw3/weapons/hmr-9.jpg', 85, 90, 80, 60),
-                ('RAM-9', 'https://www.gamesatlas.com/images/jocu/mw3/weapons/ram-9.jpg', 80, 95, 85, 55),
-                ('AMR9', 'https://www.gamesatlas.com/images/jocu/mw3/weapons/amr9.jpg', 75, 88, 78, 65),
-                ('Striker', 'https://www.gamesatlas.com/images/jocu/mw3/weapons/striker.jpg', 70, 75, 82, 70);
-            `);
-            console.log("✅ Base de datos lista con armas.");
-        }
+        // 2. Insertamos con los nuevos links que sí funcionan
+        await pool.query(`
+        INSERT INTO subfusiles (nombre, imagen, dano, cadencia, movilidad, alcance) VALUES
+        ('HMR-9', 'https://i.postimg.cc/mrh9888y/hmr9.jpg', 85, 90, 80, 60),
+        ('RAM-9', 'https://i.postimg.cc/85M6XmS7/ram9.jpg', 80, 95, 85, 55),
+        ('AMR9', 'https://i.postimg.cc/3R90fS7B/amr9.jpg', 75, 88, 78, 65),
+        ('Striker', 'https://i.postimg.cc/6pXm4z9v/striker.jpg', 70, 75, 82, 70);
+    `);
+
+        console.log("✅ Base de datos actualizada con imágenes nuevas.");
     } catch (err) {
-        console.error("❌ Error inicializando:", err.message);
+        console.error("❌ Error al actualizar:", err.message);
     }
 };
 
