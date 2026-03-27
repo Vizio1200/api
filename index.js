@@ -7,7 +7,7 @@ app.use(cors());
 app.use(express.json());
 
 // Ruta para obtener los subfusiles
-app.get('/subfusiles', async (req, res) => {
+app.get('/api/subfusiles', async (req, res) => {
     try {
         const resultado = await pool.query('SELECT * FROM subfusiles');
         res.json(resultado.rows);
