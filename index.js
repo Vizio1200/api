@@ -6,10 +6,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// --- FUNCIÓN DE INICIALIZACIÓN ---
+// --- FUNCIÓN DE INICIALIZACIÓN DE BASE DE DATOS ---
 const inicializarDB = async () => {
     try {
-        // 1. Crear tabla de usuarios (si no existe)
+        // 1. Crear tabla de usuarios
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios (
                 id SERIAL PRIMARY KEY,
@@ -18,7 +18,14 @@ const inicializarDB = async () => {
             );
         `);
 
-        // 2. Crear tabla de subfusiles (si no existe)
+        // 2. Crear usuario Admin por defecto (admin / 123)
+        const userCheck = await pool.query('SELECT * FROM usuarios WHERE username = $1', ['admin']);
+        if (userCheck.rows.length === 0) {
+            await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', ['admin', '123']);
+            console.log("👤 Usuario Admin creado: admin / 123");
+        }
+
+        // 3. Crear tabla de subfusiles
         await pool.query(`
             CREATE TABLE IF NOT EXISTS subfusiles (
                 id SERIAL PRIMARY KEY,
@@ -31,7 +38,7 @@ const inicializarDB = async () => {
             );
         `);
 
-        // 3. Limpiar y actualizar armas
+        // 4. Limpiar y actualizar armas con links funcionales
         await pool.query('DELETE FROM subfusiles');
         await pool.query(`
             INSERT INTO subfusiles (nombre, imagen, dano, cadencia, movilidad, alcance) VALUES
@@ -41,13 +48,15 @@ const inicializarDB = async () => {
             ('Striker', 'https://i.postimg.cc/6pXm4z9v/striker.jpg', 70, 75, 82, 70);
         `);
 
-        console.log("✅ Tablas creadas y armas actualizadas.");
+        console.log("✅ Base de datos lista: Usuario Admin y Armas actualizadas.");
     } catch (err) {
         console.error("❌ Error en inicializarDB:", err.message);
     }
 };
 
-// --- RUTAS DE ARMAS ---
+// --- RUTAS ---
+
+// Obtener todas las armas
 app.get('/api/subfusiles', async (req, res) => {
     try {
         const resultado = await pool.query('SELECT * FROM subfusiles ORDER BY id ASC');
@@ -57,17 +66,18 @@ app.get('/api/subfusiles', async (req, res) => {
     }
 });
 
-// --- RUTAS DE LOGIN Y REGISTRO ---
+// Registro de usuarios
 app.post('/api/register', async (req, res) => {
     const { username, password } = req.body;
     try {
         await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', [username, password]);
-        res.json({ message: "Usuario creado con éxito" });
+        res.json({ success: true, message: "Usuario creado con éxito" });
     } catch (err) {
-        res.status(500).json({ error: "El usuario ya existe" });
+        res.status(500).json({ success: false, error: "El usuario ya existe" });
     }
 });
 
+// Login de usuarios
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
