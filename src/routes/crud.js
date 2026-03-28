@@ -1,6 +1,5 @@
 const db = require('../models/connection');
 
-// ... (tus otras funciones getUser, postUser, etc. se mantienen igual)
 
 async function deleteUser(req, res) {
     try {
@@ -31,5 +30,5 @@ module.exports = {
     putUser,
     patchUser,
     deleteUser,
-    getSubfusiles // Exportado correctamente
+    getSubfusiles
 };

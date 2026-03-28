@@ -93,7 +93,6 @@ async function deleteUser(req, res) {
 
 }
 
-// ... (tus otras funciones getUser, postUser, etc)
 
 const getSubfusiles = async (req, res) => {
     try {

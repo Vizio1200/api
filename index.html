@@ -69,7 +69,6 @@
                 </div>`).join('');
         }
 
-        // Función para limpiar el modal al crear nueva arma
         function prepararNuevo() {
             document.getElementById('modalTitulo').innerText = "Añadir Subfusil";
             document.getElementById('id_arma').value = ""; // ID vacío = Crear
@@ -80,7 +79,6 @@
             document.getElementById('m').classList.remove('hidden');
         }
 
-        // Función para cargar los datos del arma en el modal
         function prepararEdicion(arma) {
             document.getElementById('modalTitulo').innerText = "Editar " + arma.nombre;
             document.getElementById('id_arma').value = arma.id; // Guardamos el ID

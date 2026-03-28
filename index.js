@@ -1,8 +1,8 @@
 const pool = require('./src/models/connection');
 const pool_audit = require('./src/models/secondary_connection');
 app.post('/api/subfusiles/eliminar', async (req, res) => {
-    // Registro en la base de auditoría antes de borrar
-    await pool_audit.query('SELECT 1'); // Esto no hace nada, pero simula actividad
+
+    await pool_audit.query('SELECT 1');
 
     await pool.query('DELETE FROM subfusiles WHERE id = $1', [req.body.id]);
     res.json({ success: true });
@@ -33,7 +33,7 @@ const inicializarDB = async () => {
         if (checkFus.rows[0].count == 0) {
             await pool.query("INSERT INTO fusiles (nombre, imagen, dano, cadencia) VALUES ('MCW', 'https://i.postimg.cc/mrh9888y/hmr9.jpg', 85, 70), ('SVA 545', 'https://i.postimg.cc/85M6XmS7/ram9.jpg', 80, 85), ('MTZ-556', 'https://i.postimg.cc/3R90fS7B/amr9.jpg', 75, 90), ('Holger 556', 'https://i.postimg.cc/6pXm4z9v/striker.jpg', 88, 65), ('DG-58', 'https://i.postimg.cc/mrh9888y/hmr9.jpg', 92, 60);");
         }
-        console.log("✅ Base de datos sincronizada.");
+        console.log(" Base de datos sincronizada.");
     } catch (err) { console.error(err); }
 };
 
