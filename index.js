@@ -9,7 +9,7 @@ app.use(express.json());
 // --- FUNCIÓN DE INICIALIZACIÓN DE BASE DE DATOS ---
 const inicializarDB = async () => {
     try {
-        // 1. Crear tabla de usuarios
+        // 1. Crear tabla de usuarios para el Login
         await pool.query(`
             CREATE TABLE IF NOT EXISTS usuarios (
                 id SERIAL PRIMARY KEY,
@@ -38,7 +38,7 @@ const inicializarDB = async () => {
             );
         `);
 
-        // 4. Limpiar y actualizar armas con links funcionales
+        // 4. Limpiar y actualizar armas con imágenes funcionales
         await pool.query('DELETE FROM subfusiles');
         await pool.query(`
             INSERT INTO subfusiles (nombre, imagen, dano, cadencia, movilidad, alcance) VALUES
@@ -56,7 +56,7 @@ const inicializarDB = async () => {
 
 // --- RUTAS ---
 
-// Obtener todas las armas
+// Obtener todas las armas para la galería
 app.get('/api/subfusiles', async (req, res) => {
     try {
         const resultado = await pool.query('SELECT * FROM subfusiles ORDER BY id ASC');
@@ -66,18 +66,7 @@ app.get('/api/subfusiles', async (req, res) => {
     }
 });
 
-// Registro de usuarios
-app.post('/api/register', async (req, res) => {
-    const { username, password } = req.body;
-    try {
-        await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', [username, password]);
-        res.json({ success: true, message: "Usuario creado con éxito" });
-    } catch (err) {
-        res.status(500).json({ success: false, error: "El usuario ya existe" });
-    }
-});
-
-// Login de usuarios
+// Ruta de Login para validar al admin
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
     try {
@@ -89,6 +78,17 @@ app.post('/api/login', async (req, res) => {
         }
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+// Ruta de Registro (Opcional, por si quieres crear más usuarios)
+app.post('/api/register', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        await pool.query('INSERT INTO usuarios (username, password) VALUES ($1, $2)', [username, password]);
+        res.json({ success: true, message: "Usuario creado con éxito" });
+    } catch (err) {
+        res.status(500).json({ success: false, error: "El usuario ya existe" });
     }
 });
 
