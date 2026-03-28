@@ -44,6 +44,18 @@ app.post('/api/subfusiles/eliminar', async (req, res) => { await pool.query('DEL
 app.get('/api/fusiles', async (req, res) => { const r = await pool.query('SELECT * FROM fusiles ORDER BY id ASC'); res.json(r.rows); });
 app.post('/api/fusiles', async (req, res) => { const { nombre, imagen, dano, cadencia } = req.body; await pool.query('INSERT INTO fusiles (nombre, imagen, dano, cadencia) VALUES ($1, $2, $3, $4)', [nombre, imagen, dano, cadencia]); res.json({ success: true }); });
 app.post('/api/fusiles/eliminar', async (req, res) => { await pool.query('DELETE FROM fusiles WHERE id = $1', [req.body.id]); res.json({ success: true }); });
-
+// --- RUTA PARA EDITAR ARMA (UPDATE) ---
+app.post('/api/subfusiles/editar', async (req, res) => {
+    const { id, nombre, imagen, dano, cadencia } = req.body;
+    try {
+        await pool.query(
+            'UPDATE subfusiles SET nombre = $1, imagen = $2, dano = $3, cadencia = $4 WHERE id = $5',
+            [nombre, imagen, dano, cadencia, id]
+        );
+        res.json({ success: true, message: "Unidad actualizada." });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => { await inicializarDB(); console.log(`🚀 Puerto ${PORT}`); });
