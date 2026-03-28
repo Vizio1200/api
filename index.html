@@ -16,104 +16,65 @@
         .warzone-card {
             background: rgba(28, 31, 35, 0.9);
             border: 1px solid #444;
-            transition: all 0.3s;
-        }
-
-        .warzone-card:hover {
-            border-color: #eab308;
-            transform: translateY(-5px);
         }
     </style>
 </head>
 
-<body class="p-4 md:p-10">
+<body class="p-10">
 
     <script>
+        // SEGURIDAD: Si no hay sesión, mandarlo al login
         if (localStorage.getItem('sesion_warzone') !== 'activa') {
-            alert("❌ ACCESO DENEGADO: Identifíquese primero.");
-            window.location.href = "../login.html";
+            alert("❌ ACCESO DENEGADO");
+            window.location.href = "login.html"; // Ahora están en la misma carpeta
         }
     </script>
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
+        <div class="flex justify-between items-center mb-12">
             <div>
                 <h1 class="text-5xl font-black uppercase italic text-yellow-500 tracking-tighter">Gestión de Arsenal
                 </h1>
-                <p class="text-gray-400 font-bold uppercase text-sm tracking-widest">Operador: <span id="nombreUsuario"
+                <p class="text-gray-400 font-bold uppercase text-xs mt-2">Operador: <span id="userDisp"
                         class="text-white">Admin</span></p>
             </div>
             <div class="flex gap-4">
                 <button onclick="abrirModal()"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-black py-3 px-8 rounded-sm uppercase italic transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)]">
+                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-black py-2 px-6 rounded-sm uppercase italic transition-all">
                     + Añadir Arma
                 </button>
                 <button onclick="cerrarSesion()"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-sm uppercase text-xs">
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm uppercase text-xs">
                     Salir
                 </button>
             </div>
         </div>
 
-        <div id="arsenal" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div id="arsenal" class="grid grid-cols-1 md:grid-cols-3 gap-8">
         </div>
     </div>
 
-    <div id="modalArma"
-        class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-        <div
-            class="bg-[#1c1f23] border-2 border-yellow-500 p-8 rounded-sm w-full max-w-lg shadow-[0_0_50px_rgba(0,0,0,1)]">
-            <h2 class="text-3xl font-black mb-6 text-yellow-500 uppercase italic tracking-tighter">Registrar Nueva Arma
-            </h2>
-
-            <form id="formArma" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Nombre del Modelo</label>
-                    <input type="text" id="nombre"
-                        class="w-full p-3 bg-gray-800 border border-gray-700 rounded-sm focus:border-yellow-500 outline-none font-bold"
-                        required>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold uppercase text-gray-500 mb-1">URL de Imagen
-                        (PostImage)</label>
-                    <input type="text" id="imagen"
-                        class="w-full p-3 bg-gray-800 border border-gray-700 rounded-sm focus:border-yellow-500 outline-none font-mono text-xs"
-                        required>
-                </div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Daño</label>
-                        <input type="number" id="dano"
-                            class="w-full p-3 bg-gray-800 border border-gray-700 rounded-sm focus:border-yellow-500 outline-none font-bold"
-                            value="50">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold uppercase text-gray-500 mb-1">Cadencia</label>
-                        <input type="number" id="cadencia"
-                            class="w-full p-3 bg-gray-800 border border-gray-700 rounded-sm focus:border-yellow-500 outline-none font-bold"
-                            value="50">
-                    </div>
-                </div>
-
-                <div class="flex gap-4 mt-8">
+    <div id="modalArma" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#1c1f23] border-2 border-yellow-500 p-8 rounded-sm w-full max-w-md">
+            <h2 class="text-2xl font-black mb-6 text-yellow-500 uppercase italic">Registrar Arma</h2>
+            <form id="formArma" class="space-y-4 text-black">
+                <input type="text" id="nombre" placeholder="Nombre" class="w-full p-2 rounded" required>
+                <input type="text" id="imagen" placeholder="URL Imagen" class="w-full p-2 rounded" required>
+                <div class="flex gap-4 mt-6">
                     <button type="button" onclick="cerrarModal()"
-                        class="flex-1 bg-gray-700 hover:bg-gray-600 py-3 rounded-sm font-black uppercase italic transition-colors">Cancelar</button>
-                    <button type="submit"
-                        class="flex-1 bg-yellow-500 hover:bg-yellow-600 text-black py-3 rounded-sm font-black uppercase italic transition-colors">Guardar
-                        en DB</button>
+                        class="flex-1 bg-gray-600 text-white py-2 rounded font-bold">Cancelar</button>
+                    <button type="submit" class="flex-1 bg-yellow-500 py-2 rounded font-bold">Guardar</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://api-il9f.onrender.com/api/subfusiles';
-        document.getElementById('nombreUsuario').innerText = localStorage.getItem('usuario_nombre') || 'Recluta';
+        document.getElementById('userDisp').innerText = localStorage.getItem('usuario_nombre') || 'Admin';
 
-        // --- CRUD: READ (Cargar Armas) ---
         async function cargarArmas() {
             try {
-                const res = await fetch(API_URL);
+                const res = await fetch('https://api-il9f.onrender.com/api/subfusiles');
                 const armas = await res.json();
                 const contenedor = document.getElementById('arsenal');
                 contenedor.innerHTML = '';
@@ -121,60 +82,23 @@
                 armas.forEach(arma => {
                     contenedor.innerHTML += `
                         <div class="warzone-card p-5 rounded-sm relative group">
-                            <img src="${arma.imagen}" class="w-full h-48 object-cover rounded-sm mb-4 border border-gray-700">
-                            <h3 class="text-2xl font-black uppercase italic tracking-tighter mb-2">${arma.nombre}</h3>
-                            
-                            <div class="space-y-2 mb-4">
-                                <div class="flex justify-between text-xs font-bold uppercase text-gray-400">
-                                    <span>Daño</span><span>${arma.dano}</span>
-                                </div>
-                                <div class="w-full bg-gray-800 h-1.5 rounded-full">
-                                    <div class="bg-red-600 h-1.5 rounded-full" style="width: ${arma.dano}%"></div>
-                                </div>
-                                <div class="flex justify-between text-xs font-bold uppercase text-gray-400">
-                                    <span>Cadencia</span><span>${arma.cadencia}</span>
-                                </div>
-                                <div class="w-full bg-gray-800 h-1.5 rounded-full">
-                                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: ${arma.cadencia}%"></div>
-                                </div>
-                            </div>
-                            
-                            <button onclick="eliminarArma(${arma.id})" class="w-full bg-red-900/20 hover:bg-red-600 text-red-500 hover:text-white border border-red-900/50 py-2 rounded-sm font-bold text-xs uppercase transition-all">
-                                🗑️ Eliminar del Arsenal
-                            </button>
+                            <img src="${arma.imagen}" class="w-full h-44 object-cover rounded-sm mb-4 border border-gray-700">
+                            <h3 class="text-2xl font-black uppercase italic tracking-tighter">${arma.nombre}</h3>
+                            <p class="text-gray-400 text-sm font-bold mt-2">Daño: ${arma.dano} | Cadencia: ${arma.cadencia}</p>
                         </div>
                     `;
                 });
-            } catch (err) {
-                console.error("Error cargando arsenal:", err);
-            }
+            } catch (err) { console.error(err); }
         }
-
-        // --- CRUD: CREATE (Añadir Arma) ---
-        document.getElementById('formArma').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            // REQUISITO: Alerta
-            alert("Enviando datos al servidor...");
-            cerrarModal();
-        });
-
-        // FUNCIONES DE INTERFAZ
-        function abrirModal() { document.getElementById('modalArma').classList.remove('hidden'); }
-        function cerrarModal() { document.getElementById('modalArma').classList.add('hidden'); }
 
         function cerrarSesion() {
             localStorage.removeItem('sesion_warzone');
-            window.location.href = "../login.html";
+            window.location.href = "login.html";
         }
 
-        async function eliminarArma(id) {
-            // REQUISITO: Alerta de confirmación
-            if (confirm('¿Confirmas la eliminación definitiva de esta unidad?')) {
-                alert('Solicitud enviada para ID: ' + id);
-            }
-        }
+        function abrirModal() { document.getElementById('modalArma').classList.remove('hidden'); }
+        function cerrarModal() { document.getElementById('modalArma').classList.add('hidden'); }
 
-        // Inicializar
         cargarArmas();
     </script>
 </body>
