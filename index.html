@@ -19,45 +19,116 @@
         <a href="index.html" class="text-yellow-500 border-b-2 border-yellow-500">Subfusiles</a>
         <a href="fusiles.html" class="text-gray-500 hover:text-white">Fusiles de Asalto</a>
     </nav>
+
     <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-12">
             <h1 class="text-5xl font-black uppercase italic text-yellow-500">Arsenal SMG</h1>
-            <button onclick="document.getElementById('m').classList.remove('hidden')"
-                class="bg-yellow-500 text-black font-black py-2 px-6 rounded-sm">+ Añadir</button>
+            <button onclick="prepararNuevo()" class="bg-yellow-500 text-black font-black py-2 px-6 rounded-sm">+
+                Añadir</button>
         </div>
         <div id="arsenal" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
     </div>
-    <div id="m" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4">
+
+    <div id="m" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4 z-50">
         <form onsubmit="guardar(event)"
             class="bg-[#1c1f23] p-8 border-2 border-yellow-500 space-y-4 text-black w-full max-w-md">
+            <h2 id="modalTitulo" class="text-yellow-500 font-black uppercase italic text-xl mb-4">Gestión de Arma</h2>
+
+            <input type="hidden" id="id_arma">
+
             <input id="n" placeholder="Nombre" class="w-full p-2" required>
             <input id="i" placeholder="URL Imagen" class="w-full p-2" required>
             <input id="d" type="number" placeholder="Daño" class="w-full p-2" required>
             <input id="c" type="number" placeholder="Cadencia" class="w-full p-2" required>
-            <div class="flex gap-4"><button type="button" onclick="document.getElementById('m').classList.add('hidden')"
-                    class="flex-1 bg-gray-600 text-white py-2">Cerrar</button>
-                <button type="submit" class="flex-1 bg-yellow-500 py-2">Guardar</button>
+
+            <div class="flex gap-4">
+                <button type="button" onclick="document.getElementById('m').classList.add('hidden')"
+                    class="flex-1 bg-gray-600 text-white py-2 font-bold">Cerrar</button>
+                <button type="submit" class="flex-1 bg-yellow-500 py-2 font-bold">Guardar</button>
             </div>
         </form>
     </div>
+
     <script>
         const API = 'https://api-il9f.onrender.com/api/subfusiles';
+
         async function cargar() {
-            const res = await fetch(API); const datos = await res.json();
+            const res = await fetch(API);
+            const datos = await res.json();
             document.getElementById('arsenal').innerHTML = datos.map(a => `
                 <div class="bg-gray-900/90 p-5 border-b-4 border-yellow-500">
                     <img src="${a.imagen}" class="w-full h-40 object-cover mb-4">
-                    <h3 class="text-xl font-black italic">${a.nombre}</h3>
+                    <h3 class="text-xl font-black italic uppercase">${a.nombre}</h3>
                     <p class="text-gray-400 text-xs mb-4">Dañ: ${a.dano} | Cad: ${a.cadencia}</p>
-                    <button onclick="borrar(${a.id})" class="w-full border border-red-600 text-red-600 py-1 text-xs hover:bg-red-600 hover:text-white">Eliminar</button>
+                    <div class="flex gap-2">
+                        <button onclick='prepararEdicion(${JSON.stringify(a)})' 
+                            class="flex-1 border border-blue-500 text-blue-500 py-1 text-xs hover:bg-blue-500 hover:text-white uppercase font-bold">Editar</button>
+                        <button onclick="borrar(${a.id})" 
+                            class="flex-1 border border-red-600 text-red-600 py-1 text-xs hover:bg-red-600 hover:text-white uppercase font-bold">Eliminar</button>
+                    </div>
                 </div>`).join('');
         }
+
+        // Función para limpiar el modal al crear nueva arma
+        function prepararNuevo() {
+            document.getElementById('modalTitulo').innerText = "Añadir Subfusil";
+            document.getElementById('id_arma').value = ""; // ID vacío = Crear
+            document.getElementById('n').value = "";
+            document.getElementById('i').value = "";
+            document.getElementById('d').value = "";
+            document.getElementById('c').value = "";
+            document.getElementById('m').classList.remove('hidden');
+        }
+
+        // Función para cargar los datos del arma en el modal
+        function prepararEdicion(arma) {
+            document.getElementById('modalTitulo').innerText = "Editar " + arma.nombre;
+            document.getElementById('id_arma').value = arma.id; // Guardamos el ID
+            document.getElementById('n').value = arma.nombre;
+            document.getElementById('i').value = arma.imagen;
+            document.getElementById('d').value = arma.dano;
+            document.getElementById('c').value = arma.cadencia;
+            document.getElementById('m').classList.remove('hidden');
+        }
+
         async function guardar(e) {
             e.preventDefault();
-            await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('n').value, imagen: document.getElementById('i').value, dano: document.getElementById('d').value, cadencia: document.getElementById('c').value }) });
-            document.getElementById('m').classList.add('hidden'); cargar();
+            const id = document.getElementById('id_arma').value;
+            const payload = {
+                nombre: document.getElementById('n').value,
+                imagen: document.getElementById('i').value,
+                dano: document.getElementById('d').value,
+                cadencia: document.getElementById('c').value
+            };
+
+            // Si hay ID, usamos la ruta de editar; si no, la de crear
+            let urlFinal = API;
+            if (id) {
+                urlFinal = API + '/editar';
+                payload.id = id;
+            }
+
+            await fetch(urlFinal, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            document.getElementById('m').classList.add('hidden');
+            cargar();
         }
-        async function borrar(id) { if (confirm('¿Borrar?')) { await fetch(API + '/eliminar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); cargar(); } }
+
+        async function borrar(id) {
+            if (confirm('¿Deseas eliminar esta arma del arsenal?')) {
+                await fetch(API + '/eliminar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                cargar();
+            }
+        }
+
         cargar();
     </script>
 </body>
