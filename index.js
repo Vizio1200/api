@@ -47,6 +47,33 @@ const inicializarDB = async () => {
             ('AMR9', 'https://i.postimg.cc/3R90fS7B/amr9.jpg', 75, 88, 78, 65),
             ('Striker', 'https://i.postimg.cc/6pXm4z9v/striker.jpg', 70, 75, 82, 70);
         `);
+        // --- RUTA PARA CREAR NUEVA ARMA (CREATE) ---
+        app.post('/api/subfusiles', async (req, res) => {
+            const { nombre, imagen, dano, cadencia } = req.body;
+            try {
+                const nuevoRegistro = await pool.query(
+                    'INSERT INTO subfusiles (nombre, imagen, dano, cadencia) VALUES ($1, $2, $3, $4) RETURNING *',
+                    [nombre, imagen, dano, cadencia]
+                );
+                res.json({ success: true, data: nuevoRegistro.rows[0] });
+            } catch (err) {
+                console.error(err);
+                res.status(500).json({ success: false, error: err.message });
+            }
+        });
+        // --- RUTA PARA CREAR NUEVA ARMA (CREATE) ---
+        app.post('/api/subfusiles', async (req, res) => {
+            const { nombre, imagen, dano, cadencia } = req.body;
+            try {
+                const nuevoRegistro = await pool.query(
+                    'INSERT INTO subfusiles (nombre, imagen, dano, cadencia) VALUES ($1, $2, $3, $4) RETURNING *',
+                    [nombre, imagen, dano, cadencia]
+                );
+                res.json({ success: true, data: nuevoRegistro.rows[0] });
+            } catch (err) {
+                res.status(500).json({ success: false, error: err.message });
+            }
+        });
 
         console.log("✅ Base de datos lista: Usuario Admin y Armas actualizadas.");
     } catch (err) {
@@ -79,6 +106,15 @@ app.post('/api/login', async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+    app.post('/api/subfusiles/eliminar', async (req, res) => {
+        const { id } = req.body;
+        try {
+            await pool.query('DELETE FROM subfusiles WHERE id = $1', [id]);
+            res.json({ success: true, message: "Unidad eliminada del arsenal." });
+        } catch (err) {
+            res.status(500).json({ success: false, error: err.message });
+        }
+    });
 });
 
 // Ruta de Registro (Opcional, por si quieres crear más usuarios)

@@ -100,7 +100,27 @@
         function cerrarModal() { document.getElementById('modalArma').classList.add('hidden'); }
 
         cargarArmas();
+        async function eliminarArma(id) {
+            if (!confirm("⚠️ ¿Estás seguro de eliminar esta arma del arsenal?")) return;
+
+            try {
+                const response = await fetch('https://api-il9f.onrender.com/api/subfusiles/eliminar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    alert("✅ Arma eliminada.");
+                    location.reload(); // Refresca para actualizar la lista
+                }
+            } catch (error) {
+                alert("❌ Error al conectar con el servidor.");
+            }
+        }
     </script>
+
 </body>
 
 </html>
