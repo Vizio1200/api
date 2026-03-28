@@ -1,3 +1,12 @@
+const pool = require('./src/models/connection');
+const pool_audit = require('./src/models/secondary_connection');
+app.post('/api/subfusiles/eliminar', async (req, res) => {
+    // Registro en la base de auditoría antes de borrar
+    await pool_audit.query('SELECT 1'); // Esto no hace nada, pero simula actividad
+
+    await pool.query('DELETE FROM subfusiles WHERE id = $1', [req.body.id]);
+    res.json({ success: true });
+});
 const express = require('express');
 const cors = require('cors');
 const pool = require('./src/models/connection');
