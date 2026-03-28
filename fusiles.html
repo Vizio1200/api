@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warzone - Fusiles de Asalto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f1113;
+            color: white;
+            background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
+        }
+
+        .warzone-card {
+            background: rgba(28, 31, 35, 0.9);
+            border: 1px solid #444;
+        }
+    </style>
+</head>
+
+<body class="p-10">
+
+    <script>
+        // SEGURIDAD: Solo entran operadores autorizados
+        if (localStorage.getItem('sesion_warzone') !== 'activa') {
+            window.location.href = "login.html";
+        }
+    </script>
+
+    <div class="max-w-6xl mx-auto">
+        <nav class="flex gap-8 mb-10 border-b border-gray-800 pb-4 uppercase font-black italic tracking-tighter">
+            <a href="index.html" class="text-gray-500 hover:text-yellow-500 transition-colors">Subfusiles (SMG)</a>
+            <a href="fusiles.html" class="text-yellow-500 border-b-2 border-yellow-500">Fusiles de Asalto (AR)</a>
+        </nav>
+
+        <div class="flex justify-between items-center mb-12">
+            <div>
+                <h1 class="text-5xl font-black uppercase italic text-yellow-500 tracking-tighter">Rifles de Asalto</h1>
+                <p class="text-gray-400 font-bold uppercase text-xs mt-2">Arsenal de Largo Alcance | Operador: <span
+                        id="userDisp" class="text-white">Admin</span></p>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="abrirModal()"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-black py-2 px-6 rounded-sm uppercase italic transition-all">
+                    + Añadir Fusil
+                </button>
+                <button onclick="cerrarSesion()"
+                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm uppercase text-xs">
+                    Salir
+                </button>
+            </div>
+        </div>
+
+        <div id="arsenal" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+    </div>
+
+    <div id="modalArma" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-[#1c1f23] border-2 border-yellow-500 p-8 rounded-sm w-full max-w-md">
+            <h2 class="text-2xl font-black mb-6 text-yellow-500 uppercase italic">Nuevo Rifle de Asalto</h2>
+            <form id="formArma" class="space-y-4 text-black">
+                <input type="text" id="nombre" placeholder="Nombre (ej: MCW)" class="w-full p-2 rounded" required>
+                <input type="text" id="imagen" placeholder="URL de la imagen" class="w-full p-2 rounded" required>
+                <input type="number" id="dano" placeholder="Daño" class="w-full p-2 rounded" required>
+                <input type="number" id="cadencia" placeholder="Cadencia" class="w-full p-2 rounded" required>
+                <div class="flex gap-4 mt-6">
+                    <button type="button" onclick="cerrarModal()"
+                        class="flex-1 bg-gray-600 text-white py-2 rounded font-bold uppercase text-sm">Cancelar</button>
+                    <button type="submit"
+                        class="flex-1 bg-yellow-500 py-2 rounded font-bold uppercase text-sm">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // CONEXIÓN A LA RUTA DE FUSILES EN RENDER
+        const API_URL = 'https://api-il9f.onrender.com/api/fusiles';
+        document.getElementById('userDisp').innerText = localStorage.getItem('usuario_nombre') || 'Admin';
+
+        async function cargarFusiles() {
+            try {
+                const res = await fetch(API_URL);
+                const armas = await res.json();
+                const contenedor = document.getElementById('arsenal');
+                contenedor.innerHTML = '';
+
+                armas.forEach(arma => {
+                    contenedor.innerHTML += `
+                        <div class="warzone-card p-5 rounded-sm border-b-4 border-yellow-600">
+                            <img src="${arma.imagen}" class="w-full h-44 object-cover rounded-sm mb-4 border border-gray-700">
+                            <h3 class="text-2xl font-black uppercase italic tracking-tighter">${arma.nombre}</h3>
+                            <p class="text-gray-400 text-sm font-bold mt-2 mb-4">Daño: ${arma.dano} | Cadencia: ${arma.cadencia}</p>
+                            <button onclick="eliminarFusil(${arma.id})" class="w-full bg-red-600/10 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-sm font-bold text-xs uppercase transition-all border border-red-600/30">
+                                🗑️ Eliminar Rifle
+                            </button>
+                        </div>
+                    `;
+                });
+            } catch (err) { console.error("Error cargando fusiles:", err); }
+        }
+
+        document.getElementById('formArma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const nueva = {
+                nombre: document.getElementById('nombre').value,
+                imagen: document.getElementById('imagen').value,
+                dano: parseInt(document.getElementById('dano').value),
+                cadencia: parseInt(document.getElementById('cadencia').value)
+            };
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(nueva)
+                });
+                if (response.ok) {
+                    alert("🎯 Fusil añadido al arsenal");
+                    cerrarModal();
+                    cargarFusiles();
+                }
+            } catch (error) { alert("Error al conectar."); }
+        });
+
+        async function eliminarFusil(id) {
+            if (!confirm("⚠️ ¿Eliminar este rifle?")) return;
+            try {
+                await fetch(`${API_URL}/eliminar`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id })
+                });
+                cargarFusiles();
+            } catch (error) { console.error(error); }
+        }
+
+        function cerrarSesion() {
+            localStorage.removeItem('sesion_warzone');
+            window.location.href = "login.html";
+        }
+        function abrirModal() { document.getElementById('modalArma').classList.remove('hidden'); }
+        function cerrarModal() { document.getElementById('modalArma').classList.add('hidden'); }
+
+        cargarFusiles();
+    </script>
+</body>
+
+</html>

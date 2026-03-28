@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warzone Arsenal - Gestión</title>
+    <title>Warzone SMG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -12,147 +11,54 @@
             color: white;
             background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
         }
-
-        .warzone-card {
-            background: rgba(28, 31, 35, 0.9);
-            border: 1px solid #444;
-        }
     </style>
 </head>
 
 <body class="p-10">
-
-    <script>
-        // SEGURIDAD: Si no hay sesión, mandarlo al login
-        if (localStorage.getItem('sesion_warzone') !== 'activa') {
-            alert("❌ ACCESO DENEGADO");
-            window.location.href = "login.html";
-        }
-    </script>
-
+    <nav class="max-w-6xl mx-auto flex gap-8 mb-10 border-b border-gray-800 pb-4 uppercase font-black italic">
+        <a href="index.html" class="text-yellow-500 border-b-2 border-yellow-500">Subfusiles</a>
+        <a href="fusiles.html" class="text-gray-500 hover:text-white">Fusiles de Asalto</a>
+    </nav>
     <div class="max-w-6xl mx-auto">
         <div class="flex justify-between items-center mb-12">
-            <div>
-                <h1 class="text-5xl font-black uppercase italic text-yellow-500 tracking-tighter">Gestión de Arsenal
-                </h1>
-                <p class="text-gray-400 font-bold uppercase text-xs mt-2">Operador: <span id="userDisp"
-                        class="text-white">Admin</span></p>
-            </div>
-            <div class="flex gap-4">
-                <button onclick="abrirModal()"
-                    class="bg-yellow-500 hover:bg-yellow-600 text-black font-black py-2 px-6 rounded-sm uppercase italic transition-all">
-                    + Añadir Arma
-                </button>
-                <button onclick="cerrarSesion()"
-                    class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-sm uppercase text-xs">
-                    Salir
-                </button>
-            </div>
+            <h1 class="text-5xl font-black uppercase italic text-yellow-500">Arsenal SMG</h1>
+            <button onclick="document.getElementById('m').classList.remove('hidden')"
+                class="bg-yellow-500 text-black font-black py-2 px-6 rounded-sm">+ Añadir</button>
         </div>
-
-        <div id="arsenal" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        </div>
+        <div id="arsenal" class="grid grid-cols-1 md:grid-cols-3 gap-8"></div>
     </div>
-
-    <div id="modalArma" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-[#1c1f23] border-2 border-yellow-500 p-8 rounded-sm w-full max-w-md">
-            <h2 class="text-2xl font-black mb-6 text-yellow-500 uppercase italic">Registrar Arma</h2>
-            <form id="formArma" class="space-y-4 text-black">
-                <input type="text" id="nombre" placeholder="Nombre del arma" class="w-full p-2 rounded" required>
-                <input type="text" id="imagen" placeholder="URL de la imagen (PostImage)" class="w-full p-2 rounded"
-                    required>
-                <input type="hidden" id="dano" value="80">
-                <input type="hidden" id="cadencia" value="90">
-
-                <div class="flex gap-4 mt-6">
-                    <button type="button" onclick="cerrarModal()"
-                        class="flex-1 bg-gray-600 text-white py-2 rounded font-bold uppercase text-sm">Cancelar</button>
-                    <button type="submit" class="flex-1 bg-yellow-500 py-2 rounded font-bold uppercase text-sm">Guardar
-                        en DB</button>
-                </div>
-            </form>
-        </div>
+    <div id="m" class="fixed inset-0 bg-black/90 hidden flex items-center justify-center p-4">
+        <form onsubmit="guardar(event)"
+            class="bg-[#1c1f23] p-8 border-2 border-yellow-500 space-y-4 text-black w-full max-w-md">
+            <input id="n" placeholder="Nombre" class="w-full p-2" required>
+            <input id="i" placeholder="URL Imagen" class="w-full p-2" required>
+            <input id="d" type="number" placeholder="Daño" class="w-full p-2" required>
+            <input id="c" type="number" placeholder="Cadencia" class="w-full p-2" required>
+            <div class="flex gap-4"><button type="button" onclick="document.getElementById('m').classList.add('hidden')"
+                    class="flex-1 bg-gray-600 text-white py-2">Cerrar</button>
+                <button type="submit" class="flex-1 bg-yellow-500 py-2">Guardar</button>
+            </div>
+        </form>
     </div>
-
     <script>
-        const API_URL = 'https://api-il9f.onrender.com/api/subfusiles';
-        document.getElementById('userDisp').innerText = localStorage.getItem('usuario_nombre') || 'Admin';
-
-        // --- CARGAR ARMAS (READ) ---
-        async function cargarArmas() {
-            try {
-                const res = await fetch(API_URL);
-                const armas = await res.json();
-                const contenedor = document.getElementById('arsenal');
-                contenedor.innerHTML = '';
-
-                armas.forEach(arma => {
-                    contenedor.innerHTML += `
-                        <div class="warzone-card p-5 rounded-sm relative group border-b-4 border-yellow-500">
-                            <img src="${arma.imagen}" class="w-full h-44 object-cover rounded-sm mb-4 border border-gray-700">
-                            <h3 class="text-2xl font-black uppercase italic tracking-tighter">${arma.nombre}</h3>
-                            <p class="text-gray-400 text-sm font-bold mt-2 mb-4">Daño: ${arma.dano} | Cadencia: ${arma.cadencia}</p>
-                            
-                            <button onclick="eliminarArma(${arma.id})" class="w-full bg-red-600/20 hover:bg-red-600 text-red-500 hover:text-white py-2 rounded-sm font-bold text-xs uppercase transition-all border border-red-600/50">
-                                🗑️ Eliminar Unidad
-                            </button>
-                        </div>
-                    `;
-                });
-            } catch (err) { console.error("Error al cargar:", err); }
+        const API = 'https://api-il9f.onrender.com/api/subfusiles';
+        async function cargar() {
+            const res = await fetch(API); const datos = await res.json();
+            document.getElementById('arsenal').innerHTML = datos.map(a => `
+                <div class="bg-gray-900/90 p-5 border-b-4 border-yellow-500">
+                    <img src="${a.imagen}" class="w-full h-40 object-cover mb-4">
+                    <h3 class="text-xl font-black italic">${a.nombre}</h3>
+                    <p class="text-gray-400 text-xs mb-4">Dañ: ${a.dano} | Cad: ${a.cadencia}</p>
+                    <button onclick="borrar(${a.id})" class="w-full border border-red-600 text-red-600 py-1 text-xs hover:bg-red-600 hover:text-white">Eliminar</button>
+                </div>`).join('');
         }
-
-        // --- GUARDAR ARMA (CREATE) ---
-        document.getElementById('formArma').addEventListener('submit', async (e) => {
+        async function guardar(e) {
             e.preventDefault();
-            const nuevaArma = {
-                nombre: document.getElementById('nombre').value,
-                imagen: document.getElementById('imagen').value,
-                dano: parseInt(document.getElementById('dano').value),
-                cadencia: parseInt(document.getElementById('cadencia').value)
-            };
-
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(nuevaArma)
-                });
-                const data = await response.json();
-                if (data.success) {
-                    alert("🎯 Arma registrada con éxito.");
-                    cerrarModal();
-                    cargarArmas();
-                }
-            } catch (error) { alert("❌ Error al guardar."); }
-        });
-
-        // --- ELIMINAR ARMA (DELETE) ---
-        async function eliminarArma(id) {
-            if (!confirm("⚠️ ¿Estás seguro de eliminar esta arma del arsenal?")) return;
-            try {
-                const response = await fetch(`${API_URL}/eliminar`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ id })
-                });
-                const data = await response.json();
-                if (data.success) {
-                    alert("✅ Arma eliminada.");
-                    cargarArmas();
-                }
-            } catch (error) { alert("❌ Error al conectar con el servidor."); }
+            await fetch(API, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('n').value, imagen: document.getElementById('i').value, dano: document.getElementById('d').value, cadencia: document.getElementById('c').value }) });
+            document.getElementById('m').classList.add('hidden'); cargar();
         }
-
-        function cerrarSesion() {
-            localStorage.removeItem('sesion_warzone');
-            window.location.href = "login.html";
-        }
-
-        function abrirModal() { document.getElementById('modalArma').classList.remove('hidden'); }
-        function cerrarModal() { document.getElementById('modalArma').classList.add('hidden'); }
-
-        cargarArmas();
+        async function borrar(id) { if (confirm('¿Borrar?')) { await fetch(API + '/eliminar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) }); cargar(); } }
+        cargar();
     </script>
 </body>
 
